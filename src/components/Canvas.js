@@ -1,35 +1,63 @@
 import React, { Component } from 'react';
+import { CompactPicker } from 'react-color';
 
 class Canvas extends Component {
 
-  componentDidMount() {
+  state = {
+    radius: 10,
+    mouseDown: false,
+    color: 'black'
   }
 
   mouseMoveHelper = (event) => {
     const canvas = this.refs.canvas
     const ctx = canvas.getContext('2d')
     const img = this.refs.image
-    const other =   <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+    if(this.state.mouseDown){
+      ctx.beginPath();
+      ctx.strokeStyle = this.state.color;
+      const rect = canvas.getBoundingClientRect()
+      const [cX, cY] = [rect.left, rect.top]
 
-    ctx.beginPath();
-    ctx.strokeStyle = 'blue';
-    const rect = canvas.getBoundingClientRect()
-    const [cX, cY] = [rect.left, rect.top]
+      ctx.arc(event.screenX - cX - 70, event.screenY - cY - 100, this.state.radius, 0, 2 * Math.PI);
+      ctx.fillStyle = this.state.color;
+      ctx.fill()
+      ctx.stroke();
+    }
+  }
 
-    //ctx.moveTo(event.screenX, event.screenY);
-    ctx.beginPath();
-ctx.arc(event.screenX - cX, event.screenY - cY - 80, 10, 0, 2 * Math.PI);
-ctx.stroke();
+  brushChange = (input) => {
+    switch(input){
+      case '+':
+        return this.setState({radius: this.state.radius + 5});
+      case '-':
+        return this.setState({radius: this.state.radius - 5});
+    }
+  }
 
-  console.log(event.screenX)
+  mouseDownToggle = () => {
+    this.setState({mouseDown: !this.state.mouseDown})
+  }
 
+  handleChangeComplete = (color) => {
+    this.setState({color: color.hex})
   }
 
   render () {
     return (
       <div>
-        <canvas ref="canvas" width={640} height={424} onMouseMove={e => this.mouseMoveHelper(e)} />
-
+        <canvas ref="canvas"
+         width={640}
+         height={424}
+         onMouseDown={()=>this.mouseDownToggle()}
+         onMouseUp={()=>this.mouseDownToggle()}
+         onMouseMove={e => this.mouseMoveHelper(e)}
+        /><br />
+        <CompactPicker
+        color={this.state.color}
+        onChangeComplete={this.handleChangeComplete} />
+        <button onClick={() => this.brushChange('+')}>Increase brush radius</button>
+        <button onClick={() => this.brushChange('-')}>Decrease brush radius</button>
       </div>
     )
   }

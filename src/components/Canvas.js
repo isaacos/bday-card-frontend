@@ -4,9 +4,10 @@ import { CompactPicker } from 'react-color';
 class Canvas extends Component {
 
   state = {
-    radius: 10,
+    radius: 1,
     mouseDown: false,
-    color: 'black'
+    color: 'black',
+    image: ''
   }
 
   mouseMoveHelper = (event) => {
@@ -19,7 +20,7 @@ class Canvas extends Component {
       const rect = canvas.getBoundingClientRect()
       const [cX, cY] = [rect.left, rect.top]
 
-      ctx.arc(event.screenX - cX - 70, event.screenY - cY - 100, this.state.radius, 0, 2 * Math.PI);
+      ctx.arc(event.screenX - cX -25, event.screenY - cY - 100, this.state.radius, 0, 2 * Math.PI);
       ctx.fillStyle = this.state.color;
       ctx.fill()
       ctx.stroke();
@@ -43,6 +44,16 @@ class Canvas extends Component {
     this.setState({color: color.hex})
   }
 
+  downloadImage = () => {
+    //grabs canvas using ID
+    let canvas = this.refs.canvas
+    canvas.href = canvas.toDataURL("image/png")
+    console.log(canvas)
+    this.setState({image: canvas.href})
+  }
+
+
+
   render () {
     return (
       <div>
@@ -58,6 +69,10 @@ class Canvas extends Component {
         onChangeComplete={this.handleChangeComplete} />
         <button onClick={() => this.brushChange('+')}>Increase brush radius</button>
         <button onClick={() => this.brushChange('-')}>Decrease brush radius</button>
+        <button onClick={() => this.downloadImage()}>download image</button>
+        <a href="path-to-image.png" download>
+          <img src={this.state.image} />
+        </a>
       </div>
     )
   }

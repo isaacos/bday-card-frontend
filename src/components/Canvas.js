@@ -8,24 +8,37 @@ class Canvas extends Component {
     mouseDown: false,
     color: 'black',
     image: '',
-    email: ''
+    email: '',
+    startX: null,
+    startY: null
   }
 
   mouseMoveHelper = (event) => {
-    const canvas = this.refs.canvas
-    const ctx = canvas.getContext('2d')
+    this.setState({startX: event.clientX, startY: event.clientY})
     const img = this.refs.image
     if(this.state.mouseDown){
-      ctx.beginPath();
-      ctx.strokeStyle = this.state.color;
-      const rect = canvas.getBoundingClientRect()
-      const [cX, cY] = [rect.left, rect.top]
-
-      ctx.arc(event.screenX - cX - 75, event.screenY - cY - 115, this.state.radius, 0, 2 * Math.PI);
-      ctx.fillStyle = this.state.color;
-      ctx.fill()
-      ctx.stroke();
+    this.drawLine(event)
     }
+  }
+
+  onMouseDownHelper = (event) => {
+    this.setState({mouseDown: true})
+    this.drawLine(event, 14)
+  }
+
+  drawLine = (event, minusClientX =15) => {
+    const canvas = this.refs.canvas
+    const ctx = canvas.getContext('2d')
+    ctx.lineJoin = 'round' //turn to line
+    ctx.lineWidth = this.state.radius
+    ctx.beginPath();
+    ctx.strokeStyle = this.state.color;
+    ctx.moveTo(this.state.startX -15, this.state.startY)
+    ctx.lineTo(event.clientX -minusClientX, event.clientY)
+    this.setState({startX: event.clientX, startY: event.clientY})
+    ctx.closePath()
+    ctx.stroke();
+
   }
 
   brushChange = (input) => {
@@ -37,8 +50,8 @@ class Canvas extends Component {
     }
   }
 
-  mouseDownToggle = () => {
-    this.setState({mouseDown: !this.state.mouseDown})
+  mouseDownFalse = () => {
+    this.setState({mouseDown: false})
   }
 
   handleChangeComplete = (color) => {
@@ -77,9 +90,10 @@ class Canvas extends Component {
         <canvas ref="canvas"
          width={640}
          height={424}
-         onMouseDown={()=>this.mouseDownToggle()}
-         onMouseUp={()=>this.mouseDownToggle()}
+         onMouseDown={e=>this.onMouseDownHelper(e)}
+         onMouseUp={()=>this.mouseDownFalse()}
          onMouseMove={e => this.mouseMoveHelper(e)}
+         onMouseOut={() => this.mouseDownFalse()}
         /><br />
         <CompactPicker
         color={this.state.color}

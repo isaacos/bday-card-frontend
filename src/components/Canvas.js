@@ -23,22 +23,22 @@ class Canvas extends Component {
 
   onMouseDownHelper = (event) => {
     this.setState({mouseDown: true})
-    this.drawLine(event, 14)
+    this.drawLine(event, 1)
   }
 
-  drawLine = (event, minusClientX =15) => {
+  drawLine = (event, minusClientX =0) => {
     const canvas = this.refs.canvas
     const ctx = canvas.getContext('2d')
+    const offsetLeft = canvas.offsetLeft
     ctx.lineJoin = 'round' //turn to line
     ctx.lineWidth = this.state.radius
     ctx.beginPath();
     ctx.strokeStyle = this.state.color;
-    ctx.moveTo(this.state.startX -15, this.state.startY)
-    ctx.lineTo(event.clientX -minusClientX, event.clientY)
+    ctx.moveTo(this.state.startX - offsetLeft, this.state.startY)
+    ctx.lineTo(event.clientX - minusClientX - offsetLeft, event.clientY)
     this.setState({startX: event.clientX, startY: event.clientY})
     ctx.closePath()
     ctx.stroke();
-
   }
 
   brushChange = (input) => {
@@ -88,7 +88,7 @@ class Canvas extends Component {
     return (
       <div>
         <canvas ref="canvas"
-         width={640}
+         width={900}
          height={424}
          onMouseDown={e=>this.onMouseDownHelper(e)}
          onMouseUp={()=>this.mouseDownFalse()}

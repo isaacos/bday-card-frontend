@@ -13,7 +13,9 @@ class Canvas extends Component {
     startY: null,
     newestLines: [],
     previousLines: [],
-    undraw: true
+    undoneLines: [],
+    undraw: true,
+    redraw: true
   }
 
   mouseMoveHelper = (event) => {
@@ -36,12 +38,10 @@ class Canvas extends Component {
     this.setState({previousLines: newLines})
   }
 
-  redraw = (prevLines) => {
-    //  prevLines.forEach(lineArray =>{
-          prevLines.forEach(lineObj =>{
-            this.drawHelper(lineObj)
-          })
-    //  })
+  redrawAll = (prevLines) => {
+    prevLines.forEach(lineObj =>{
+      this.drawHelper(lineObj)
+    })
   }
 
   drawHelper = (lineObj) => {
@@ -74,6 +74,8 @@ class Canvas extends Component {
         return this.setState({radius: 17});
       case 'large':
         return this.setState({radius: 27});
+      case 'chunka':
+        return this.setState({radius: 60})
     }
   }
 
@@ -82,34 +84,46 @@ class Canvas extends Component {
       let newPreviousLines = [...this.state.previousLines, this.state.newestLines]
       this.setState({mouseDown: false, previousLines: newPreviousLines})
     }
-    console.log(this.state.previousLines)
   }
 
   undoLine = () => {
-    if(this.state.undraw){
-
+    //prevents entire project from being erased or undefined being passed into undoneLines array
+    if(this.state.undraw && (this.state.previousLines.length > 0)){
       let lastItemidx = this.state.previousLines.length -1
-
-      let minusLastLines = this.state.previousLines.filter(function(lines, idx){
-        return idx < lastItemidx
-      })
-
-      this.setState({previousLines: minusLastLines})
-
+      let minusLastLines = this.undoFilter(this.state.previousLines, lastItemidx)
+      let lastLine = this.state.previousLines[lastItemidx]
+      this.setState({previousLines: minusLastLines, undoneLines: [lastLine, ...this.state.undoneLines]})
       this.refresh()
-      this.redraw(minusLastLines)
+      this.redrawAll(minusLastLines)
     }
-    //console.log('previous Lines in state in undoLine', this.state.previousLines)
-  //  console.log('minusLastLines', minusLastLines)
+  }
+
+  redoLine = () => {
+    if(this.state.redraw && (this.state.undoneLines.length > 0)){
+      let minusFirstLine = this.state.undoneLines.filter(function(line, idx){
+        return idx > 0
+      })
+      this.setState({undoneLines: minusFirstLine, previousLines: [...this.state.previousLines, this.state.undoneLines[0]]})
+    }
+  }
+
+  undoFilter = (array, index) => {
+    return array.filter(function(lines, idx){
+      return idx < index
+    })
   }
 
   undraw = () => {
     this.setState({undraw: true})
-    if(this.state.undraw){
+      setInterval(() => { this.undoLine()}, 120)
+  }
 
-      setInterval(() => { this.undoLine()}, 50)
-    }
-
+  redraw = () => {
+    this.setState({redraw: true})
+    setInterval(() => {
+      this.redoLine()
+      this.redrawAll(this.state.previousLines)
+    }, 120)
   }
 
   handleChangeComplete = (color) => {
@@ -120,9 +134,7 @@ class Canvas extends Component {
     //grabs canvas using ID
     let canvas = this.refs.canvas
     canvas.href = canvas.toDataURL("image/png")
-    console.log(canvas)
     this.setState({image: canvas.href})
-    console.log(canvas.href)
   }
 
   mailTo = () => {
@@ -143,7 +155,7 @@ class Canvas extends Component {
 
 
   render () {
-  console.log('previous Lines in state outside', this.state.previousLines)
+  console.log(this.state.undoneLines)
     return (
       <div>
         <canvas
@@ -164,9 +176,10 @@ class Canvas extends Component {
         <button onClick={() => this.brushChange('small')}>Small</button>
         <button onClick={() => this.brushChange('medium')}>Medium</button>
         <button onClick={() => this.brushChange('large')}>Large</button>
+        <button onClick={() => this.brushChange('chunka')}>Chunka</button>
         <button onClick={() => this.downloadImage()}>download image</button>
         <button onClick={() => this.refresh()}>refresh</button>
-        <button onClick={() => this.redraw()}>ReDraw</button>
+        <button onMouseDown={() => this.redraw()} onMouseUp={() => this.setState({redraw: false})}>ReDraw</button>
         <button onMouseDown={() => this.undraw()} onMouseUp={() => this.setState({undraw: false})}>undraw</button>
         <input type="email" placeholder="email" onChange={event => this.setState({email: event.target.value})} />
         <a href="path-to-image.png" onClick={() => this.mailTo()} >

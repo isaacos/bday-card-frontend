@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import { CompactPicker } from 'react-color';
 
+import SliderUndraw from './SliderUndraw.js';
+import 'react-rangeslider/lib/index.css'
+
+
 class Canvas extends Component {
 
   state = {
@@ -14,9 +18,9 @@ class Canvas extends Component {
     newestLines: [],
     previousLines: [],
     undoneLines: [],
-    undraw: true,
-    redraw: true,
-    setting: 'paint'
+    setting: 'paint',
+
+
   }
 
   mouseMoveHelper = (event) => {
@@ -35,13 +39,11 @@ class Canvas extends Component {
     }
   }
 
-
-
   onMouseDownHelper = (event) => {
     if(this.state.setting === 'bigLine'){
-      this.setState({startX: event.clientX, startY: event.clientY, mouseDown: true})
+      this.setState({startX: event.clientX, startY: event.clientY, mouseDown: true, undoneLines: []})
     } else {
-      this.setState({mouseDown: true})
+      this.setState({mouseDown: true, undoneLines: []})
       this.drawLine(event, 1)
     }
   }
@@ -132,7 +134,7 @@ class Canvas extends Component {
     if(this.state.mouseDown){
       let newPreviousLines = [...this.state.previousLines, this.state.newestLines]
       this.setState({mouseDown: false, previousLines: newPreviousLines})
-      //commits the bigLine onMouseUp 
+      //commits the bigLine onMouseUp
       if(this.state.setting === 'bigLine'){
         this.refresh()
          this.redrawAll(this.state.previousLines)
@@ -143,7 +145,7 @@ class Canvas extends Component {
 
   undoLine = () => {
     //prevents entire project from being erased or undefined being passed into undoneLines array
-    if(this.state.undraw && (this.state.previousLines.length > 0)){
+    if(this.state.previousLines.length > 0){
       let lastItemidx = this.state.previousLines.length -1
       let minusLastLines = this.undoFilter(this.state.previousLines, lastItemidx)
       let lastLine = this.state.previousLines[lastItemidx]
@@ -154,7 +156,7 @@ class Canvas extends Component {
   }
 
   redoLine = () => {
-    if(this.state.redraw && (this.state.undoneLines.length > 0)){
+    if( this.state.undoneLines.length > 0){
       let minusFirstLine = this.state.undoneLines.filter(function(line, idx){
         return idx > 0
       })
@@ -166,19 +168,6 @@ class Canvas extends Component {
     return array.filter(function(lines, idx){
       return idx < index
     })
-  }
-
-  undraw = () => {
-    this.setState({undraw: true})
-      setInterval(() => { this.undoLine()}, 120)
-  }
-
-  redraw = () => {
-    this.setState({redraw: true})
-    setInterval(() => {
-      this.redoLine()
-      this.redrawAll(this.state.previousLines)
-    }, 120)
   }
 
   handleChangeComplete = (color) => {
@@ -208,8 +197,8 @@ class Canvas extends Component {
     .then(response => console.log(response))
   }
 
-
   render () {
+    console.log(this.state.previousLines.length)
     return (
       <div>
         <canvas
@@ -222,6 +211,14 @@ class Canvas extends Component {
          onMouseMove={e => this.mouseMoveHelper(e)}
          onMouseOut={e => this.mouseUpOrOutHelper(e)}
         /><br />
+        <div className="slider-container">
+          <SliderUndraw
+            undoLine={this.undoLine}
+            redoLine={this.redoLine}
+            min={-this.state.undoneLines.length * 2}
+            max={this.state.previousLines.length * 1.7}
+          />
+        </div>
         <CompactPicker
           color={this.state.color}
           onChangeComplete={this.handleChangeComplete}
@@ -236,8 +233,8 @@ class Canvas extends Component {
         <button onClick={() => this.setState({setting: 'square'})}>Square</button>
         <button onClick={() => this.setState({setting: 'bigLine'})}>Big Line</button>
         <button onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
-        <button onMouseDown={() => this.redraw()} onMouseUp={() => this.setState({redraw: false})}>ReDraw</button>
-        <button onMouseDown={() => this.undraw()} onMouseUp={() => this.setState({undraw: false})}>undraw</button>
+
+
         <input type="email" placeholder="email" onChange={event => this.setState({email: event.target.value})} />
         <a href="path-to-image.png" onClick={() => this.mailTo()} >
           <img src={this.state.image} />

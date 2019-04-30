@@ -35,3 +35,7 @@
 canvas {
   border: solid;
 }
+
+.slider-container {
+  width: 80vmin;
+}

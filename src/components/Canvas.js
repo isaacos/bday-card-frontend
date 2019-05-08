@@ -2,15 +2,16 @@ import React, { Component } from 'react';
 import { CompactPicker } from 'react-color';
 
 import SliderUndraw from './SliderUndraw.js';
+import Modal from './Modal.js';
 import 'react-rangeslider/lib/index.css'
 
 
 class Canvas extends Component {
 
   state = {
-    radius: 1,
+    radius: 2,
     mouseDown: false,
-    color: 'black',
+    color: '#000000',
     image: '',
     email: '',
     startX: null,
@@ -18,9 +19,7 @@ class Canvas extends Component {
     newestLines: [],
     previousLines: [],
     undoneLines: [],
-    setting: 'paint',
-
-
+    setting: 'paint'
   }
 
   mouseMoveHelper = (event) => {
@@ -50,7 +49,8 @@ class Canvas extends Component {
 
   drawLine = (event, minusClientX =0, commit = 'commit') => {
     const offsetLeft = this.refs.canvas.offsetLeft
-    let storedLine = {startX: this.state.startX - offsetLeft, startY: this.state.startY, clientX:  event.clientX - minusClientX - offsetLeft, clientY: event.clientY, color: this.state.color, radius: this.state.radius, setting: this.state.setting}
+    const offsetTop = this.refs.canvas.offsetTop
+    let storedLine = {startX: this.state.startX - offsetLeft, startY: this.state.startY - offsetTop, clientX:  event.clientX - minusClientX - offsetLeft, clientY: event.clientY - offsetTop, color: this.state.color, radius: this.state.radius, setting: this.state.setting}
     this.drawHelper(storedLine)
     //commits new lines to previousLines except for mouseMove helper for bigLines
     if(commit === 'commit'){
@@ -115,7 +115,8 @@ class Canvas extends Component {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
 
-  brushChange = (input) => {
+  brushChange = (event) => {
+    let input = event.target.id
     switch(input){
       case 'pencil':
         return this.setState({radius: 2});
@@ -127,6 +128,8 @@ class Canvas extends Component {
         return this.setState({radius: 27});
       case 'chunka':
         return this.setState({radius: 100})
+      default:
+        return this.setState({radius: 2})
     }
   }
 
@@ -190,27 +193,68 @@ class Canvas extends Component {
       },
       body: JSON.stringify({
         email: this.state.email,
-        url: this.state.image
+        url: this.refs.canvas.toDataURL("image/png")
       })
     })
     .then(response => response.json())
-    .then(response => console.log(response))
+    .then(response => this.postMailHandler(response))
+  }
+
+  postMailHandler = (response) => {
+    this.setState({image: response.url})
+  }
+
+  closeModal = () => {
+    this.setState({image: ''})
+  }
+
+  setButtonStyle = (variable) => {
+    if (variable === this.state.radius || variable === this.state.setting){
+        //includes ternary to factor in visability in case the color is black
+      return ['#4d4d4d', '#333333', '#000000'].includes(this.state.color) ? {background: this.state.color, color: 'white', borderColor: 'black'} : {background: this.state.color}
+    } else {
+      return {}
+    }
   }
 
   render () {
-    console.log(this.state.previousLines.length)
     return (
       <div>
-        <canvas
-         ref="canvas"
-         className={this.state.canvasName}
-         width={900}
-         height={424}
-         onMouseDown={e=>this.onMouseDownHelper(e)}
-         onMouseUp={e =>this.mouseUpOrOutHelper(e)}
-         onMouseMove={e => this.mouseMoveHelper(e)}
-         onMouseOut={e => this.mouseUpOrOutHelper(e)}
-        /><br />
+        <div className="canvas-row-container">
+          <div className="canvas-left">
+          <div className="sizing-buttons">
+            <button style={this.setButtonStyle(2)} id="pencil" className="size-btn" onClick={e => this.brushChange(e)}>pencil</button>
+            <button style={this.setButtonStyle(7)} id="small" className="size-btn" onClick={e => this.brushChange(e)}>Small</button>
+            <button style={this.setButtonStyle(17)}id="medium" className="size-btn" onClick={e => this.brushChange(e)}>Medium</button>
+            <button style={this.setButtonStyle(27)}id="large" className="size-btn" onClick={e => this.brushChange(e)}>Large</button>
+            <button style={this.setButtonStyle(100)}id="chunka" className="size-btn" onClick={e => this.brushChange(e)}>Chunka</button>
+          </div>
+          <div className="setting-buttons">
+            <button style={this.setButtonStyle('paint')} onClick={() => this.setState({setting: 'paint'})}>paint</button>
+            <button style={this.setButtonStyle('square')} onClick={() => this.setState({setting: 'square'})}>Square</button>
+            <button style={this.setButtonStyle('bigLine')} onClick={() => this.setState({setting: 'bigLine'})}>Big Line</button>
+          </div>
+
+          <button className="refresh-mail-btn" onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
+          <input type="email" placeholder="Email" onChange={event => this.setState({email: event.target.value})} />
+          <button className="refresh-mail-btn" onClick={() => this.mailTo()}> MAIL </button>
+            <div className="inner-canvas-left">
+              <div className="double-inner-left">
+
+              </div>
+            </div>
+          </div>
+            <canvas
+            ref="canvas"
+            className={this.state.canvasName}
+            width={900}
+            height={424}
+            onMouseDown={e =>this.onMouseDownHelper(e)}
+            onMouseUp={e =>this.mouseUpOrOutHelper(e)}
+            onMouseMove={e => this.mouseMoveHelper(e)}
+            onMouseOut={e => this.mouseUpOrOutHelper(e)}
+            /><br />
+          </div>
         <div className="slider-container">
           <SliderUndraw
             undoLine={this.undoLine}
@@ -223,22 +267,12 @@ class Canvas extends Component {
           color={this.state.color}
           onChangeComplete={this.handleChangeComplete}
         />
-        <button onClick={() => this.brushChange('pencil')}>pencil</button>
-        <button onClick={() => this.brushChange('small')}>Small</button>
-        <button onClick={() => this.brushChange('medium')}>Medium</button>
-        <button onClick={() => this.brushChange('large')}>Large</button>
-        <button onClick={() => this.brushChange('chunka')}>Chunka</button>
-        <button onClick={() => this.downloadImage()}>download image</button>
-        <button onClick={() => this.setState({setting: 'paint'})}>paint</button>
-        <button onClick={() => this.setState({setting: 'square'})}>Square</button>
-        <button onClick={() => this.setState({setting: 'bigLine'})}>Big Line</button>
-        <button onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
+        <Modal
+          email={this.state.email}
+          image={this.state.image}
+          closeModal={this.closeModal}
+        />
 
-
-        <input type="email" placeholder="email" onChange={event => this.setState({email: event.target.value})} />
-        <a href="path-to-image.png" onClick={() => this.mailTo()} >
-          <img src={this.state.image} />
-        </a>
       </div>
     )
   }

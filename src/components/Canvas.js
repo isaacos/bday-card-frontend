@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { CompactPicker } from 'react-color';
+
+import ColorGrid from './ColorGrid.js';
 
 import SliderUndraw from './SliderUndraw.js';
 import Modal from './Modal.js';
@@ -173,10 +174,6 @@ class Canvas extends Component {
     })
   }
 
-  handleChangeComplete = (color) => {
-    this.setState({color: color.hex})
-  }
-
   downloadImage = () => {
     //grabs canvas using ID
     let canvas = this.refs.canvas
@@ -217,6 +214,10 @@ class Canvas extends Component {
     }
   }
 
+  setColor = (event) => {
+    this.setState({color: event.target.id})
+  }
+
   render () {
     return (
       <div>
@@ -238,11 +239,7 @@ class Canvas extends Component {
           <button className="refresh-mail-btn" onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
           <input type="email" placeholder="Email" onChange={event => this.setState({email: event.target.value})} />
           <button className="refresh-mail-btn" onClick={() => this.mailTo()}> MAIL </button>
-            <div className="inner-canvas-left">
-              <div className="double-inner-left">
-
-              </div>
-            </div>
+          <ColorGrid setColor={this.setColor}/>
           </div>
             <canvas
             ref="canvas"
@@ -255,23 +252,27 @@ class Canvas extends Component {
             onMouseOut={e => this.mouseUpOrOutHelper(e)}
             /><br />
           </div>
-        <div className="slider-container">
-          <SliderUndraw
-            undoLine={this.undoLine}
-            redoLine={this.redoLine}
-            min={-this.state.undoneLines.length * 2}
-            max={this.state.previousLines.length * 1.7}
-          />
-        </div>
-        <CompactPicker
-          color={this.state.color}
-          onChangeComplete={this.handleChangeComplete}
-        />
-        <Modal
-          email={this.state.email}
-          image={this.state.image}
-          closeModal={this.closeModal}
-        />
+          <div>
+            <div className="slider-container">
+              <div className="slider-right">
+              </div>
+              <SliderUndraw
+                undoLine={this.undoLine}
+                redoLine={this.redoLine}
+                min={-this.state.undoneLines.length * 2}
+                max={this.state.previousLines.length * 1.7}
+              />
+            </div>
+            <Modal
+              email={this.state.email}
+              image={this.state.image}
+              closeModal={this.closeModal}
+            />
+          </div>
+        <ul className="bottom-row">
+         <li id="bottom-20">
+         </li>
+        </ul>
 
       </div>
     )

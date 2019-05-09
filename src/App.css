@@ -52,6 +52,10 @@ input {
   text-align: center;
 }
 
+:focus {
+  outline: 0;
+}
+
 ::placeholder {
   font-family: Baumans;
   text-align: center;
@@ -72,6 +76,17 @@ input {
   padding-right: 2em;
   padding-left: 2em;
   margin-top: -3px;
+}
+
+
+.slider-right {
+    float: right;
+    border: solid;
+    height: 51px;
+    width: 160%;
+    margin-right: -700px;
+    margin-top: -2px;
+    background: rgb(229, 178, 40)
 }
 
 .sizing-buttons {
@@ -142,19 +157,37 @@ h1 {
   border: solid;
   float: left;
   margin-right: -3px;
+  background-color: rgb(192, 7, 18);
+  overflow: scroll;
+  overflow-x: hidden;
 }
 
 .canvas-row-container {
   display: flex;
 }
 
+.bottom-row {
+  width: 100%;
+  border: solid;
+  height: 40;
+  margin-top: -3px;
+}
+
 .inner-canvas-left {
   width: 99%;
   height: 200px;
   border: solid;
-  margin-top: 50%;
   margin-bottom: 0.1px;
   background-color: rgb(192, 7, 18);
+}
+
+#bottom-20 {
+  border:solid;
+  height: 66px;
+  width: 624px;
+  margin-top: -3px;
+  margin-bottom: -3px;
+  background: black;
 }
 
 .size-btn {
@@ -179,4 +212,20 @@ h1 {
   border: solid;
   height: 10vmax;
   width: 50px;
+}
+
+ul {
+  margin: 0 auto;
+  margin-left: -44px;
+  text-align: center;
+  width: 100%;
+  float: left;
+}
+
+li {
+    display: inline-block;
+    vertical-align: top;
+    height: 36px;
+    width: 36px;
+    border:solid;
 }

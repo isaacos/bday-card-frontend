@@ -183,6 +183,7 @@ class Canvas extends Component {
 
   mailTo = () => {
     fetch('https://bday-backend.herokuapp.com/mail', {
+      mode: 'no-cors', 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

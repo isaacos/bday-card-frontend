@@ -193,7 +193,8 @@ class Canvas extends Component {
         email: this.state.email,
         url: this.refs.canvas.toDataURL("image/png")
       })
-    }).then(response => response.json())
+    })
+    .then(response => response.json())
     .then(response => this.postMailHandler(response))
   }
 

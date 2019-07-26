@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 const ColorGrid = ({setColor}) => {
 
@@ -6,7 +6,7 @@ const ColorGrid = ({setColor}) => {
 
   return (
     <ul>
-    {colors.map(color => <li onClick={e => setColor(e)} id={color} style={{background: color}}></li>)}
+    {colors.map(color => <li onClick={e => setColor(e)} key={color} id={color} style={{background: color}}></li>)}
     </ul>
   )
 }

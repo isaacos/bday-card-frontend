@@ -50,7 +50,8 @@ class Canvas extends Component {
 
   drawLine = (event, minusClientX =0, commit = 'commit') => {
     const offsetLeft = this.refs.canvas.offsetLeft
-    const offsetTop = this.refs.canvas.offsetTop
+    const offsetTop = this.refs.canvas.offsetTop + this.props.scrollOffset //scrollOffset adjusts in the event that the user scrolls down on the page
+    console.log(this.refs.canvas.getBoundingClientRect())
     let storedLine = {startX: this.state.startX - offsetLeft, startY: this.state.startY - offsetTop, clientX:  event.clientX - minusClientX - offsetLeft, clientY: event.clientY - offsetTop, color: this.state.color, radius: this.state.radius, setting: this.state.setting}
     this.drawHelper(storedLine)
     //commits new lines to previousLines except for mouseMove helper for bigLines
@@ -86,6 +87,8 @@ class Canvas extends Component {
         return 'miter'
       case 'square':
         return 'bevel'
+      default:
+        return 'round'
     }
   }
 
@@ -150,7 +153,7 @@ class Canvas extends Component {
   undoLine = () => {
     //prevents entire project from being erased or undefined being passed into undoneLines array
     if(this.state.previousLines.length > 0){
-      let lastItemidx = this.state.previousLines.length -1
+      let lastItemidx = this.state.previousLines.length - 1
       let minusLastLines = this.undoFilter(this.state.previousLines, lastItemidx)
       let lastLine = this.state.previousLines[lastItemidx]
       this.setState({previousLines: minusLastLines, undoneLines: [lastLine, ...this.state.undoneLines]})
@@ -224,33 +227,32 @@ class Canvas extends Component {
       <div>
         <div className="canvas-row-container">
           <div className="canvas-left">
-          <div className="sizing-buttons">
-            <button style={this.setButtonStyle(2)} id="pencil" className="size-btn" onClick={e => this.brushChange(e)}>pencil</button>
-            <button style={this.setButtonStyle(7)} id="small" className="size-btn" onClick={e => this.brushChange(e)}>Small</button>
-            <button style={this.setButtonStyle(17)}id="medium" className="size-btn" onClick={e => this.brushChange(e)}>Medium</button>
-            <button style={this.setButtonStyle(27)}id="large" className="size-btn" onClick={e => this.brushChange(e)}>Large</button>
-            <button style={this.setButtonStyle(100)}id="chunka" className="size-btn" onClick={e => this.brushChange(e)}>Chunka</button>
-          </div>
-          <div className="setting-buttons">
-            <button style={this.setButtonStyle('paint')} onClick={() => this.setState({setting: 'paint'})}>paint</button>
-            <button style={this.setButtonStyle('square')} onClick={() => this.setState({setting: 'square'})}>Square</button>
-            <button style={this.setButtonStyle('bigLine')} onClick={() => this.setState({setting: 'bigLine'})}>Big Line</button>
-          </div>
-
-          <button className="refresh-mail-btn" onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
-          <input type="email" placeholder="Email" onChange={event => this.setState({email: event.target.value})} />
-          <button className="refresh-mail-btn" onClick={() => this.mailTo()}> MAIL </button>
-          <ColorGrid setColor={this.setColor}/>
+            <div className="sizing-buttons">
+              <button style={this.setButtonStyle(2)} id="pencil" className="size-btn" onClick={e => this.brushChange(e)}>pencil</button>
+              <button style={this.setButtonStyle(7)} id="small" className="size-btn" onClick={e => this.brushChange(e)}>Small</button>
+              <button style={this.setButtonStyle(17)}id="medium" className="size-btn" onClick={e => this.brushChange(e)}>Medium</button>
+              <button style={this.setButtonStyle(27)}id="large" className="size-btn" onClick={e => this.brushChange(e)}>Large</button>
+              <button style={this.setButtonStyle(100)}id="chunka" className="size-btn" onClick={e => this.brushChange(e)}>Chunka</button>
+            </div>
+            <div className="setting-buttons">
+              <button style={this.setButtonStyle('paint')} onClick={() => this.setState({setting: 'paint'})}>paint</button>
+              <button style={this.setButtonStyle('square')} onClick={() => this.setState({setting: 'square'})}>Square</button>
+              <button style={this.setButtonStyle('bigLine')} onClick={() => this.setState({setting: 'bigLine'})}>Big Line</button>
+            </div>
+            <button className="refresh-mail-btn" onClick={() => this.refresh()} onMouseDown={() => this.setState({previousLines: [], undoneLines: []})}>refresh</button>
+            <input type="email" placeholder="Email" onChange={event => this.setState({email: event.target.value})} />
+            <button className="refresh-mail-btn" onClick={() => this.mailTo()}> MAIL </button>
+            <ColorGrid setColor={this.setColor}/>
           </div>
             <canvas
-            ref="canvas"
-            className={this.state.canvasName}
-            width={900}
-            height={424}
-            onMouseDown={e =>this.onMouseDownHelper(e)}
-            onMouseUp={e =>this.mouseUpOrOutHelper(e)}
-            onMouseMove={e => this.mouseMoveHelper(e)}
-            onMouseOut={e => this.mouseUpOrOutHelper(e)}
+              ref="canvas"
+              className={this.state.canvasName}
+              width={900}
+              height={424}
+              onMouseDown={e =>this.onMouseDownHelper(e)}
+              onMouseUp={e =>this.mouseUpOrOutHelper(e)}
+              onMouseMove={e => this.mouseMoveHelper(e)}
+              onMouseOut={e => this.mouseUpOrOutHelper(e)}
             /><br />
           </div>
           <div>
@@ -274,7 +276,6 @@ class Canvas extends Component {
          <li id="bottom-20">
          </li>
         </ul>
-
       </div>
     )
   }

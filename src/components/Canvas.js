@@ -185,8 +185,7 @@ class Canvas extends Component {
   }
 
   mailTo = () => {
-    fetch('https://bday-backend.herokuapp.com/mail', {
-      mode: 'no-cors',
+    fetch('http://localhost:3000/mail', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -194,10 +193,9 @@ class Canvas extends Component {
       },
       body: JSON.stringify({
         email: this.state.email,
-        url: this.refs.canvas.toDataURL("image/png")
+        url: this.refs.canvas.toDataURL("image/png"),
       })
-    })
-    .then(response => response.json())
+    }).then(response => response.json())
     .then(response => this.postMailHandler(response))
   }
 
